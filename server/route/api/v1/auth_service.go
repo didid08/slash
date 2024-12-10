@@ -207,7 +207,7 @@ func (s *APIV1Service) doSignIn(ctx context.Context, user *store.User, expireTim
 		return status.Errorf(codes.Internal, "failed to upsert access token to store: %v", err)
 	}
 
-	cookie := fmt.Sprintf("%s=%s; Path=/; Expires=%s; HttpOnly; SameSite=Strict", AccessTokenCookieName, accessToken, time.Now().Add(AccessTokenDuration).Format(time.RFC1123))
+	cookie := fmt.Sprintf("%s=%s; Path=/; Expires=%s; HttpOnly; SameSite=None; Secure", AccessTokenCookieName, accessToken, time.Now().Add(AccessTokenDuration).Format(time.RFC1123))
 	if err := grpc.SetHeader(ctx, metadata.New(map[string]string{
 		"Set-Cookie": cookie,
 	})); err != nil {
@@ -220,7 +220,7 @@ func (s *APIV1Service) doSignIn(ctx context.Context, user *store.User, expireTim
 func (*APIV1Service) SignOut(ctx context.Context, _ *v1pb.SignOutRequest) (*emptypb.Empty, error) {
 	// Set the cookie header to expire access token.
 	if err := grpc.SetHeader(ctx, metadata.New(map[string]string{
-		"Set-Cookie": fmt.Sprintf("%s=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict", AccessTokenCookieName),
+		"Set-Cookie": fmt.Sprintf("%s=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=None; Secure", AccessTokenCookieName),
 	})); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to set grpc header, error: %v", err)
 	}
